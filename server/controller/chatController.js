@@ -103,6 +103,9 @@ const sendMessage = async(req, res) => {
         chat.messages.push({role: 'user', content: message.trim()});
         
         const response = await generateResponse(message.trim());
+        if(!response){
+            return res.status(500).json({message: 'Failed to generate response'});
+        }
         chat.messages.push({role: 'assistant', content: response});
         await chat.save();  
 

@@ -92,22 +92,29 @@ const generateResponse = async (message) => {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-            // FIX: Access generateContent through the .models property
+            // FIX: Correct API call structure
             const question = isQuestion(message);
             const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: "gemini-2.0-flash-exp",
                 contents: [{ role: "user", parts: [{ text: message }] }],
-                config: {
-                    systemInstruction: question
+                systemInstruction: {
+                    parts: [{ text: question
                         ? "Answer in 2-3 short sentences. Keep it concise but complete."
-                        : "Be concise.",
+                        : "Be concise." }]
+                },
+                generationConfig: {
                     maxOutputTokens: question ? 220 : 280,
                     temperature: 0.4
                 }
             });
 
-            // The result is directly on the response object
-            return response.text;
+            // Ensure response has valid text
+            const text = response?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text || typeof text !== 'string') {
+                throw new Error('Gemini response did not contain valid assistant content');
+            }
+
+            return text.trim();
 
         } catch (error) {
             const status = error.status || error.response?.status;
