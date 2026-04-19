@@ -5,10 +5,11 @@ import axios from 'axios';
 const ChatWindow = ({ chatId, onRename, onDelete }) => {
   const [chat, setChat] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef(null);
 
-  // fetch chat whenever id changes
+  
   useEffect(() => {
     if (!chatId) return;
     setLoading(true);
@@ -34,19 +35,32 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
   }, [chat]);
 
   const handleSend = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || isSending) return;
+    
+    const userMessage = message.trim();
+    setMessage('');
+    setIsSending(true);
+
+    
+    setChat(prev => ({
+      ...prev,
+      messages: [...prev.messages, { role: 'user', content: userMessage }]
+    }));
+
     try {
       const res = await axios.post(`/api/chats/${chatId}/messages`, {
-        message
+        message: userMessage
       }, {
         withCredentials: true
       });
       if (res.status !== 200) throw new Error(`send failed ${res.status}`);
-      // controller returns updated chat
+      
       setChat(res.data.chat || res.data);
-      setMessage('');
     } catch (err) {
       console.error('ChatWindow handleSend error', err);
+      // fetchChat(); 
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -99,6 +113,13 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
             <span>{m.content}</span>
           </div>
         ))}
+        {isSending && (
+          <div className="typing-indicator">
+            <div className="dot"></div>
+            <div className="dot"></div>
+            <div className="dot"></div>
+          </div>
+        )}
         <div ref={messagesEndRef}></div>
       </div>
       <div className="message-input">
@@ -107,9 +128,12 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
           value={message}
           onChange={e => setMessage(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
-          placeholder="Type a message…"
+          placeholder={isSending ? "Waiting for response..." : "Type a message..."}
+          disabled={isSending}
         />
-        <button onClick={handleSend}>{loading ? 'Loading…' : 'Send'}</button>
+        <button onClick={handleSend} disabled={isSending || !message.trim()}>
+          {isSending ? 'Sending...' : 'Send'}
+        </button>
       </div>
     </div>
   );
