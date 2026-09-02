@@ -95,8 +95,8 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
     }
   };
 
-  if (loading) return <div>Loading chat…</div>;
-  if (!chat) return <div>No chat selected</div>;
+  if (loading) return <div className="chat-loading">Loading chat…</div>;
+  if (!chat) return <div className="chat-loading">No chat selected</div>;
 
   return (
     <div className="chat-window">
@@ -132,7 +132,7 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
           disabled={isSending}
         />
         <button onClick={handleSend} disabled={isSending || !message.trim()}>
-          {isSending ? 'Sending...' : 'Send'}
+          {isSending ? '…' : <><span className="btn-text">Send</span> ➤</>}
         </button>
       </div>
     </div>
