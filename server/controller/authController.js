@@ -6,7 +6,7 @@ const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
     try{
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email }).select('+password');
         if(existingUser){
             return res.status(400).json({ message: 'User already exists' });
         }
@@ -30,7 +30,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
     try{
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+password');
         if(!user){
             return res.status(401).json({ message: 'Invalid credentials' });
         }
@@ -57,13 +57,12 @@ const logoutUser = async (req, res) => {
     // Add the token to the blacklist
     await BlackList.create({ token });
 
-    // Clear the token cookie
     res.clearCookie('token');
     res.status(200).json({ message: 'Logout successful' });
 }
 
 
-//get user info from token
+
 const getUserInfo = async (req, res) => {
     const userId = req.user?.userId;
     if (!userId) {
@@ -82,7 +81,6 @@ const getUserInfo = async (req, res) => {
     }
 };
 
-// get all users - for testing purposes only, not exposed in routes
 const getAllUsers = async (req, res) => {
     try{
         const users = await User.find().select('-password');

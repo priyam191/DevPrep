@@ -112,9 +112,15 @@ const sendMessage = async(req, res) => {
         res.status(200).json({message: 'Message sent successfully', chat});
 
     }catch(err){
-        console.error('sendMessage error:', err);
+        console.error('sendMessage error:', err.message, err.cause?.code || '');
         if (err?.response?.status === 429) {
             return res.status(429).json({ message: 'Rate limited. Please try again shortly.' });
+        }
+        if (err.code === 'GEMINI_TIMEOUT') {
+            return res.status(504).json({ message: 'AI response timed out. Please try again.' });
+        }
+        if (err.message === 'fetch failed') {
+            return res.status(502).json({ message: 'Could not reach AI service. Check your network and try again.' });
         }
         res.status(500).json({ message: 'Server error while sending message' });
     }
