@@ -51,10 +51,34 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
+//authenticate to check valid user to upload or download file from s3
+
+const authenticate = async(req,res, next) =>{
+  try{
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+
+     const token = authHeader.split(' ')[1];
+    const blacklisted = await BlackList.findOne({ token });
+    if (blacklisted) {
+      return res.status(401).json({ message: 'Token is invalidated. Please log in again.' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  }catch(err){
+    console.error('Error in authentication middleware:', err);
+  }
+}
+
 module.exports = {
   hashPassword,
   comparePassword,
   generateToken,
   verifyToken,
-  requireAuth
+  requireAuth,
+  authenticate
 };

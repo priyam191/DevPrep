@@ -8,6 +8,10 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoute');
 const chatRoutes = require('./routes/chatRoute');
+const resumeRoutes = require('./routes/resumeRoute');
+
+const errorHandler = require('./middleware/errorHandler');
+
 const { apiLimiter } = require('./middleware/rateLimit');
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -27,6 +31,8 @@ app.use(cookieParser());
 app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/resumes', resumeRoutes);
+app.use(errorHandler);
 
 const port = process.env.PORT || 3001;
 
