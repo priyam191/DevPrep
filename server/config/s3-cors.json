@@ -1,0 +1,14 @@
+{
+  "CORSRules": [
+    {
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["PUT", "GET", "HEAD"],
+      "AllowedOrigins": [
+        "https://dev-prep-gamma.vercel.app",
+        "https://dev-prep-*-priyams-projects-52af067f.vercel.app"
+      ],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 3000
+    }
+  ]
+}
