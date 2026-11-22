@@ -31,6 +31,12 @@ const Dashboard = () => {
             <p>Practice technical questions and get instant AI-powered feedback on your answers.</p>
           </button>
 
+          <button className="feature-card" onClick={() => navigate('/resumes')}>
+            <div className="feature-card-icon resume">📄</div>
+            <h3>Resume Upload</h3>
+            <p>Upload your resume as a PDF to get set up for AI-powered review and interview practice.</p>
+          </button>
+
           <button
             className="feature-card"
             onClick={() => alert('Interview Assistant coming soon!')}

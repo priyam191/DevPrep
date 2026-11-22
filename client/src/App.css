@@ -275,6 +275,10 @@
   background: #dcfce7;
 }
 
+.feature-card-icon.resume {
+  background: #fef3c7;
+}
+
 .feature-card h3 {
   margin: 0;
   font-size: 1.125rem;

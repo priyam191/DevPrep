@@ -1,5 +1,6 @@
 import './sidebar.css';
 import axios from 'axios';
+import API_URL from '../config';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,7 +20,7 @@ const Sidebar = ({
 
   const handleNewChat = async () => {
     try {
-      const res = await axios.post('/api/chats/', {}, { withCredentials: true });
+      const res = await axios.post(`${API_URL}/api/chats/`, {}, { withCredentials: true });
       if (res.status !== 201) throw new Error(`new chat failed (${res.status})`);
       const newChat = res.data.chat;
       onNewChat && onNewChat(newChat);
@@ -33,7 +34,7 @@ const Sidebar = ({
       const newTitle = prompt('New title', chat.title || '');
       if (!newTitle || newTitle === chat.title) return;
       const chatKey = chat.chatId || chat._id;
-      const res = await axios.patch(`/api/chats/${chatKey}`, { title: newTitle }, { withCredentials: true });
+      const res = await axios.patch(`${API_URL}/api/chats/${chatKey}`, { title: newTitle }, { withCredentials: true });
       if (res.status !== 200) throw new Error(`rename failed (${res.status})`);
       onRename && onRename(chatKey, newTitle);
     } catch (err) {
@@ -45,7 +46,7 @@ const Sidebar = ({
     try {
       if (!window.confirm('Delete this chat?')) return;
       const chatKey = chat.chatId || chat._id;
-      const res = await axios.delete(`/api/chats/${chatKey}`, { withCredentials: true });
+      const res = await axios.delete(`${API_URL}/api/chats/${chatKey}`, { withCredentials: true });
       if (res.status !== 200) throw new Error(`delete failed (${res.status})`);
       onDelete && onDelete(chatKey);
     } catch (err) {

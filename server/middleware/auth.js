@@ -39,7 +39,7 @@ const verifyToken = async (req, res, next) => {
     req.token = token;
     next();
   } catch (error) {
-    res.status(400).json({ message: 'Invalid token.' });
+    res.status(401).json({ message: 'Invalid or expired token.' });
   }
 };
 
@@ -53,26 +53,32 @@ const requireAuth = (req, res, next) => {
 
 //authenticate to check valid user to upload or download file from s3
 
-const authenticate = async(req,res, next) =>{
-  try{
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'No token provided' });
+const authenticate = async (req, res, next) => {
+  try {
+    const bearerToken = req.header('Authorization')?.replace('Bearer ', '');
+    const token = bearerToken || req.cookies?.token;
+
+    if (!token) {
+      return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
 
-     const token = authHeader.split(' ')[1];
     const blacklisted = await BlackList.findOne({ token });
     if (blacklisted) {
       return res.status(401).json({ message: 'Token is invalidated. Please log in again.' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
-    next();
-  }catch(err){
+    req.token = token;
+    return next();
+  } catch (err) {
+    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Invalid or expired token.' });
+    }
     console.error('Error in authentication middleware:', err);
+    return res.status(500).json({ message: 'Authentication failed.' });
   }
-}
+};
 
 module.exports = {
   hashPassword,

@@ -50,9 +50,10 @@ const confirmUpload = async ({ userId, resumeId }) => {
         throw new Error('Resume is not in a pending state. Cannot confirm upload.');
     }
 
-    //verify that object exists in S3
-    const metadata = await s3Service.getObjectMetadata({ key: resumeRecord.s3Key });
-    if (!metadata) {
+    //verify that object exists in S3 (HeadObject throws if the key is missing)
+    try {
+        await s3Service.getObjectMetadata({ key: resumeRecord.s3Key });
+    } catch (err) {
         throw new Error('Uploaded file not found in S3. Please try uploading again.');
     }
 

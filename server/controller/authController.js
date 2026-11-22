@@ -29,6 +29,11 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     try{
         const user = await User.findOne({ email }).select('+password');
         if(!user){
@@ -39,7 +44,12 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
         const token = generateToken({ userId: user._id, email: user.email });
-        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+        });
         res.json({ message: 'Login successful', token });
 
     }catch(err){
@@ -57,7 +67,12 @@ const logoutUser = async (req, res) => {
     // Add the token to the blacklist
     await BlackList.create({ token });
 
-    res.clearCookie('token');
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+    });
     res.status(200).json({ message: 'Logout successful' });
 }
 

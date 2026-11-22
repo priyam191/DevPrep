@@ -7,7 +7,9 @@ const errorHandler = (
 
     console.error(err);
 
-    return res.status(400).json({
+    const status = err.status || err.statusCode || 500;
+
+    return res.status(status).json({
 
         success: false,
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../features/SideBar';
 import ChatWindow from '../features/chatWindow';
 import axios from 'axios';
+import API_URL from '../config';
 
 const Home = () => {
     const [activeChatId, setActiveChatId] = useState(null);
@@ -12,7 +13,7 @@ const Home = () => {
     useEffect(() => {
         const fetchChats = async () => {
             try {
-                const response = await axios.get('/api/chats/', { withCredentials: true });
+                const response = await axios.get(`${API_URL}/api/chats/`, { withCredentials: true });
                 if (response.status !== 200) throw new Error(`fetch chats failed (${response.status})`);
                 const data = response.data;
                 setChats(Array.isArray(data) ? data : data.chats || []);

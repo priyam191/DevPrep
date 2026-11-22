@@ -22,9 +22,20 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(express.json());
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: (origin, callback) => {
+    // Allow non-browser requests (no Origin header) and any configured origin.
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   credentials: true,
 }))
 app.use(cookieParser());
@@ -41,13 +52,17 @@ app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ success: true, status: "ok" });
+});
+
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(port, () => {
+    app.listen(port,"0.0.0.0", () => {
       console.log(`🚀 Server is running on port ${port}`);
       console.log(`   CORS origin: ${process.env.CLIENT_URL || 'NOT SET (CORS will break!)'}`);
-      console.log(`   Health check: http://localhost:${port}/`);
+      console.log(`   Health check: http://localhost:${port}/health`);
     });
   } catch (err) {
     console.error('\n💥 Failed to start server. Fix the error above and try again.');

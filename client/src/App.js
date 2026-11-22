@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
+import ResumeUpload from './pages/ResumeUpload';
 import './App.css';
 
 function App() {
@@ -23,6 +24,14 @@ function App() {
                   <Dashboard />
                 </PrivateRoute>
               } 
+            />
+            <Route
+              path="/resumes"
+              element={
+                <PrivateRoute>
+                  <ResumeUpload />
+                </PrivateRoute>
+              }
             />
             <Route 
               path="/"

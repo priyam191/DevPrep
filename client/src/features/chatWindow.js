@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './chatWindow.css';
 import axios from 'axios';
+import API_URL from '../config';
 
 const ChatWindow = ({ chatId, onRename, onDelete }) => {
   const [chat, setChat] = useState(null);
@@ -15,7 +16,7 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
     setLoading(true);
     const fetchChat = async () => {
       try {
-        const res = await axios.get(`/api/chats/${chatId}`, { withCredentials: true });
+        const res = await axios.get(`${API_URL}/api/chats/${chatId}`, { withCredentials: true });
         if (res.status !== 200) throw new Error(`get chat failed ${res.status}`);
         setChat(res.data);
       } catch (err) {
@@ -40,6 +41,7 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
     const userMessage = message.trim();
     setMessage('');
     setIsSending(true);
+    setError('');
 
     
     setChat(prev => ({
@@ -48,7 +50,7 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
     }));
 
     try {
-      const res = await axios.post(`/api/chats/${chatId}/messages`, {
+      const res = await axios.post(`${API_URL}/api/chats/${chatId}/messages`, {
         message: userMessage
       }, {
         withCredentials: true
@@ -58,7 +60,13 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
       setChat(res.data.chat || res.data);
     } catch (err) {
       console.error('ChatWindow handleSend error', err);
-      // fetchChat(); 
+      // roll back the optimistic user message so the UI matches the server
+      setChat(prev => ({
+        ...prev,
+        messages: prev.messages.slice(0, -1)
+      }));
+      setMessage(userMessage);
+      setError(err.response?.data?.message || 'Failed to send message. Please try again.');
     } finally {
       setIsSending(false);
     }
@@ -68,7 +76,7 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
     const newTitle = prompt('Enter new title', chat?.title || '');
     if (newTitle && newTitle !== chat.title) {
       try {
-        const res = await axios.patch(`/api/chats/${chatId}`, {
+        const res = await axios.patch(`${API_URL}/api/chats/${chatId}`, {
           title: newTitle
         }, {
           withCredentials: true
@@ -85,7 +93,7 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
   const handleDeleteClick = async () => {
     if (!window.confirm('Are you sure you want to delete this chat?')) return;
     try {
-      const res = await axios.delete(`/api/chats/${chatId}`, {
+      const res = await axios.delete(`${API_URL}/api/chats/${chatId}`, {
         withCredentials: true
       });
       if (res.status !== 200) throw new Error(`delete failed ${res.status}`);
@@ -122,6 +130,7 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
         )}
         <div ref={messagesEndRef}></div>
       </div>
+      {error && <div className="chat-error">{error}</div>}
       <div className="message-input">
         <input
           type="text"
