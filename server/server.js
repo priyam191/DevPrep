@@ -31,10 +31,11 @@ app.use(express.json());
 app.use(cors({
   origin: (origin, callback) => {
     // Allow non-browser requests (no Origin header) and any configured origin.
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
+    // A request from an unlisted origin is served without CORS headers (the
+    // browser blocks it) instead of throwing — same-origin requests, which the
+    // single Vercel domain uses, are not affected either way.
+    const isAllowed = !origin || allowedOrigins.includes(origin);
+    return callback(null, isAllowed);
   },
   credentials: true,
 }))
@@ -45,9 +46,6 @@ app.use('/api/chats', chatRoutes);
 app.use('/api/resumes', resumeRoutes);
 app.use(errorHandler);
 
-const port = process.env.PORT || 3001;
-
-
 app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
@@ -56,18 +54,23 @@ app.get("/health", (req, res) => {
   res.status(200).json({ success: true, status: "ok" });
 });
 
-const startServer = async () => {
-  try {
-    await connectDB();
-    app.listen(port,"0.0.0.0", () => {
-      console.log(`🚀 Server is running on port ${port}`);
-      console.log(`   CORS origin: ${process.env.CLIENT_URL || 'NOT SET (CORS will break!)'}`);
-      console.log(`   Health check: http://localhost:${port}/health`);
-    });
-  } catch (err) {
-    console.error('\n💥 Failed to start server. Fix the error above and try again.');
-    process.exit(1);
-  }
-};
+// Export the Express app so Vercel can run it as a single Function.
+module.exports = app;
 
-startServer();
+// Long-lived server for local dev / self-hosting. This block is skipped when the
+// module is imported (e.g. by Vercel), so it only runs with `node server.js`.
+if (require.main === module) {
+  const port = process.env.PORT || 3001;
+  connectDB()
+    .then(() => {
+      app.listen(port, "0.0.0.0", () => {
+        console.log(`🚀 Server is running on port ${port}`);
+        console.log(`   CORS origin: ${process.env.CLIENT_URL || 'NOT SET (CORS will break!)'}`);
+        console.log(`   Health check: http://localhost:${port}/health`);
+      });
+    })
+    .catch(() => {
+      console.error('\n💥 Failed to start server. Fix the error above and try again.');
+      process.exit(1);
+    });
+}
