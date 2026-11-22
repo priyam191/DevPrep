@@ -25,16 +25,15 @@ process.on('uncaughtException', (err) => {
 const normalizeOrigin = (origin) => origin.trim().replace(/\/+$/, '');
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://dev-prep-gamma.vercel.app',
   ...(process.env.CLIENT_URL || '').split(','),
   ...(process.env.CORS_ORIGINS || '').split(','),
 ]
   .map(normalizeOrigin)
   .filter(Boolean);
 
-// Vercel preview deployments for this project use the team-qualified hostname.
-// Explicit custom domains should be listed in CLIENT_URL or CORS_ORIGINS.
-const vercelProjectOrigin = /^https:\/\/dev-prep-[a-z0-9-]+-priyams-projects-52af067f\.vercel\.app$/;
+// Vercel preview deployments keep the project slug in the hostname. Explicit
+// custom domains should be listed in CLIENT_URL or CORS_ORIGINS.
+const vercelProjectOrigin = /^https:\/\/dev-prep-gamma(?:-[a-z0-9-]+)?\.vercel\.app$/;
 
 app.use(express.json());
 app.use(cors({
