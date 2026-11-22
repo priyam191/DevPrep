@@ -32,9 +32,9 @@ const allowedOrigins = [
   .map(normalizeOrigin)
   .filter(Boolean);
 
-// Vercel preview deployments keep the project slug in the hostname. Explicit
-// custom domains should be listed in CLIENT_URL or CORS_ORIGINS.
-const vercelProjectOrigin = /^https:\/\/dev-prep-gamma(?:-[a-z0-9-]+)?\.vercel\.app$/;
+// Vercel preview deployments for this project use the team-qualified hostname.
+// Explicit custom domains should be listed in CLIENT_URL or CORS_ORIGINS.
+const vercelProjectOrigin = /^https:\/\/dev-prep-[a-z0-9-]+-priyams-projects-52af067f\.vercel\.app$/;
 
 app.use(express.json());
 app.use(cors({
