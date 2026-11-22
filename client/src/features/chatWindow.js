@@ -8,6 +8,7 @@ const ChatWindow = ({ chatId, onRename, onDelete }) => {
   const [loading, setLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
 
   
