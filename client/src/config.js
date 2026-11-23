@@ -4,6 +4,6 @@
 //   Production (client/.env.production): https://devprep-api.duckdns.org
 //     The React app (Vercel) and the Express API (duckdns) are deployed
 //     separately, so production calls the API cross-origin by its absolute URL.
-const API_URL = process.env.REACT_APP_API_URL || 'localhost:3001';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 export default API_URL;
